@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <!-- No external font CDN — system fonts only for CSP compliance and privacy -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="desktop">
+    <header id="top-bar">
+      <div id="clock-block">
+        <span id="clock">00:00</span>
+        <span id="date-str"></span>
+      </div>
+      <div id="top-actions">
+        <button id="add-module-btn" title="Add module">+ Module</button>
+      </div>
+    </header>
+
+    <div id="module-picker" class="hidden">
+      <div id="module-picker-inner">
+        <h3>Add Module</h3>
+        <div class="picker-options">
+          <button class="picker-opt" data-module="tabs">
+            <span class="picker-icon">⬜</span>
+            <span>Tab Manager</span>
+          </button>
+          <button class="picker-opt" data-module="kanban">
+            <span class="picker-icon">⬛</span>
+            <span>Kanban Board</span>
+          </button>
+          <button class="picker-opt" data-module="notes">
+            <span class="picker-icon">📝</span>
+            <span>Quick Notes</span>
+          </button>
+          <button class="picker-opt" data-module="pomodoro">
+            <span class="picker-icon">⏱</span>
+            <span>Pomodoro Timer</span>
+          </button>
+        </div>
+        <button id="picker-cancel">Cancel</button>
+      </div>
+    </div>
+
+    <main id="canvas"></main>
+  </div>
+
+  <!-- Security utilities must load first -->
+  <script src="security.js"></script>
+  <!-- Modules -->
+  <script src="modules/tabs.js"></script>
+  <script src="modules/kanban.js"></script>
+  <script src="modules/notes.js"></script>
+  <script src="modules/pomodoro.js"></script>
+  <!-- Orchestrator last -->
+  <script src="dashboard.js"></script>
+</body>
+</html>
