@@ -2,9 +2,6 @@
 
 A modular, privacy-first productivity dashboard that replaces Chrome's new tab page. Drag and resize panels, keep your work in view, and carry everything with you across every device on your Chrome profile.
 
-
-asdglkajshdgaj gadf
-
 ---
 
 ## Why it exists
