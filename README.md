@@ -5,9 +5,199 @@ A modular, privacy-first productivity dashboard that replaces Chrome's new tab p
 ---
 
 ## Why it exists
-Most new tab extensions are either too simple (just a clock and a background) or too heavy (cloud accounts, trackers, ads). This one sits in the middle: a  workspace you can customise, built entirely on Chrome's own APIs, with no servers, no extnesion accounts, and no data leaving the browser.
 
-Everything — notes, kanban cards, window positions — lives in `chrome.storage`. Notes and Kanban boards **sync** across your Chrome profile using `chrome.storage.sync`, the same secure channel Chrome uses for bookmarks.
+Most new tab extensions are either too simple (just a clock and a background) or too heavy (cloud accounts, trackers, ads). This one sits in the middle: a real workspace you can customise, built entirely on Chrome's own APIs, with no servers, no accounts, and no data ever leaving your browser.
+
+Everything — notes, kanban cards, window positions — lives in `chrome.storage`. Notes and Kanban boards sync automatically across your Chrome profile using `chrome.storage.sync`, the same secure channel Chrome uses for bookmarks and passwords.
+
+---
+
+## What it looks like
+
+### The main dashboard
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│  14:32   SAT, MAY 3                                        + Module      │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ╔═══════════════════╗   ╔══════════════════════════════════════════╗    │
+│  ║ ● ─ ○  Tab Mgr   ║   ║ ● ─ ○  My Project Kanban               ║    │
+│  ╠═══════════════════╣   ╠══════════════════════════════════════════╣    │
+│  ║ 🔍 Search tabs…  ║   ║ 🔍 Search   + Add Card  ⊞  ⋮⋮         ║    │
+│  ║ All  🔊  📌  ●   ║   ║ All  Feature  Bug  Task  Idea           ║    │
+│  ║ 12 of 34 tabs ↓  ║   ╠══════════════╦═════════╦════════════════╣    │
+│  ╠═══════════════════╣   ║  TO DO     3 ║ DOING 2 ║  DONE       4  ║    │
+│  ║ ◉ github.com/dash ║   ║ ┌──────────┐ ║ ┌─────┐ ║ ┌───────────┐ ║    │
+│  ║   notion.so       ║   ║ │ API docs │ ║ │Auth │ ║ │ Design    │ ║    │
+│  ║   figma.com/proto ║   ║ │[Feature] │ ║ │[Bug]│ ║ │[Task]     │ ║    │
+│  ║   localhost:3000  ║   ║ └──────────┘ ║ └─────┘ ║ └───────────┘ ║    │
+│  ╚═══════════════════╝   ╚══════════════╩═════════╩════════════════╝    │
+│                                                                          │
+│  ╔══════════════════════════╗   ╔════════════════════╗                   │
+│  ║ ● ─ ○  Notes         ●  ║   ║ ● ─ ○  Pomodoro   ║                   │
+│  ╠══════════════╦═══════════╣   ╠════════════════════╣                   │
+│  ║ Meeting notes║ Client    ║   ║ Focus  Short  Long  ║                   │
+│  ║ Sprint plan  ║ called    ║   ║    ╭──────────╮    ║                   │
+│  ║ Ideas        ║ re: API   ║   ║    │  24:17   │    ║                   │
+│  ║              ║ changes…  ║   ║    │  Focus   │    ║                   │
+│  ║              ╠═══════════╣   ║    ╰──────────╯    ║                   │
+│  ║              ║ 42w · 198 ║   ║  [ Pause ]  [ ↺ ] ║                   │
+│  ╚══════════════╩═══════════╝   ╚════════════════════╝                   │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  ● = red dot (close)   ─ = yellow dot (minimise to title bar)
+  ○ = green dot (restore)    drag title bar to move, corner to resize
+```
+
+### Tab Manager — find any tab instantly
+
+```
+╔══════════════════════════════════════╗
+║ ● ─ ○  Tab Manager                  ║
+╠══════════════════════════════════════╣
+║  🔍  github                          ║
+║  All   🔊 Audio   📌 Pinned  ● Active║
+║  3 of 34 tabs             ↓ Export  ║
+╠══════════════════════════════════════╣
+║  ◉  github.com / dashboard      ✕   ║
+║     github.com                       ║
+║     GitHub Actions — CI build    ✕   ║
+║     github.com/actions/runs           ║
+║     Pull Request #184 — fixes    ✕   ║
+║     github.com/pulls/184             ║
+╚══════════════════════════════════════╝
+
+Export dropdown:
+  ┌─────────────────────────┐
+  │ Copy as Markdown        │  ← instant clipboard
+  │ Copy as Text            │  ← instant clipboard
+  │ ─────────────────────── │
+  │ Download CSV            │  ← file download
+  │ Download Markdown       │
+  │ Download plain text     │
+  └─────────────────────────┘
+```
+
+Click a row to jump to that tab. Filter by audio/pinned/active. Export the current filtered view — handy for sharing "open tabs for this project" with a colleague.
+
+### Kanban Board — your workflow, your columns
+
+```
+First-run: choose your columns
+╔═════════════════════════════════════════════╗
+║  Configure your board                       ║
+║                                             ║
+║  ┌─────────┐ ┌─────────────┐ ┌───────────┐ ║
+║  │● To Do  │ │● In Progress│ │● Done  ✓  │ ║
+║  └─────────┘ └─────────────┘ └───────────┘ ║
+║  ┌──────────┐ ┌─────────┐ ┌─────────────┐  ║
+║  │  Review  │ │ Backlog │ │   Testing   │  ║
+║  └──────────┘ └─────────┘ └─────────────┘  ║
+║                                             ║
+║  Layout:  [ Single row ▾ ]                  ║
+║                                             ║
+║  Tags:  ● Task  ● Feature  ● Bug  ● Idea    ║
+║  [  New tag label…   ] [🎨] [ Add Tag ]     ║
+║                                             ║
+║  [ Use Defaults ]        [ Create Board ]   ║
+╚═════════════════════════════════════════════╝
+
+Running board in 2×2 grid layout:
+╔══════════════════════════════════════════════════╗
+║ ● ─ ○  Sprint 24                       ⊞  ⋮⋮   ║
+╠══════════════════════════════════════════════════╣
+║ 🔍 Search…   + Add Card    ⊞  ⋮⋮               ║
+║ All  Feature  Bug  Task  Idea  Research           ║
+╠════════════════════╦═════════════════════════════╣
+║  ⬤ TO DO       3  ║  ⬤ IN PROGRESS           2  ║
+║ ─────────────── ⠿  ║ ─────────────────────── ⠿  ║
+║ ┌──────────────┐   ║ ┌───────────────────────┐   ║
+║ │ Add dark mode│   ║ │ Refactor auth module  │   ║
+║ │ [Feature]    │   ║ │ [Task]                │   ║
+║ └──────────────┘   ║ └───────────────────────┘   ║
+║ + Add card         ║ + Add card                   ║
+╠════════════════════╬═════════════════════════════╣
+║  ⬤ DONE        4  ║  ⬤ BLOCKED              1   ║
+║ ─────────────── ⠿  ║ ─────────────────────── ⠿  ║
+║ ┌──────────────┐   ║ ┌───────────────────────┐   ║
+║ │ API endpoints│   ║ │ Waiting on design sign│   ║
+║ │ [Feature]    │   ║ │ [Bug]                 │   ║
+║ └──────────────┘   ║ └───────────────────────┘   ║
+╚════════════════════╩═════════════════════════════╝
+
+  ⠿ = drag column header to reorder
+  ⊞ = cycle layout: row → 2×2 → 3×2
+  ⋮⋮ = edit columns and tags
+```
+
+### Quick Notes — synced scratch pad
+
+```
+╔══════════════════════════════════════════════════╗
+║ ● ─ ○  Notes                                    ║
+╠═══════════════╦══════════════════════════════════╣
+║ Meeting notes ║ Meeting notes              ● + ✕║
+║ Sprint plan   ╠══════════════════════════════════╣
+║ API ideas     ║                                  ║
+║               ║ Client called re: the API        ║
+║               ║ timeline. Need to push back      ║
+║               ║ the deadline by one week.        ║
+║               ║                                  ║
+║               ║ Action items:                    ║
+║               ║ - Update project plan            ║
+║               ║ - Email stakeholders             ║
+║               ╠══════════════════════════════════╣
+║               ║ 42 words · 198/6500 chars     ● ║
+╚═══════════════╩══════════════════════════════════╝
+                                               ↑
+                        sync dot: yellow = saving, green = synced,
+                        red = quota exceeded (still saves locally)
+```
+
+### Pomodoro Timer
+
+```
+╔═══════════════════════╗
+║ ● ─ ○  Pomodoro      ║
+╠═══════════════════════╣
+║  Focus  Short   Long  ║
+║                       ║
+║       ╭───────╮       ║
+║     ╭─┤ 24:17 ├─╮     ║
+║     │ │ Focus │ │     ║
+║     ╰─┴───────┴─╯     ║
+║                       ║
+║  [ Start ] [ ↺ ]  ⚙  ║
+║                       ║
+║    ● ● ○ ○            ║
+║    2 of 4 sessions    ║
+╠═══════════════════════╣
+║  Settings (⚙):       ║
+║  Focus       25 min   ║
+║  Short break  5 min   ║
+║  Long break  15 min   ║
+║  Long after   4 sess  ║
+║  [ Save ]             ║
+╚═══════════════════════╝
+```
+
+---
+
+## Themes
+
+Six themes are built in, switchable instantly via the **⚙** button in the top bar. The choice is saved and restored across sessions.
+
+| Theme | Character |
+|---|---|
+| **Dark** | Deep charcoal base, blue accent. The default. |
+| **Light** | White surfaces, cool grey page, saturated blue accent. |
+| **Solarized Light** | Ethan Schoonover's warm cream palette with blue/cyan accents. |
+| **Solarized Dark** | Same canonical palette, inverted to a deep teal base. |
+| **FiveThirtyEight** | Editorial newspaper feel — warm off-white, Georgia serif font, strong red accent, ruled borders. |
+| **Cyberpunk** | Near-black navy, electric magenta + cyan neons, zero border-radius, monospace everywhere, glowing window borders. |
+
+Each theme defines the complete CSS custom property set — backgrounds, surfaces, borders, accents, shadows, and typography — so every component adapts without a single hardcoded colour override outside of `themes.css`.
 
 ---
 
@@ -29,67 +219,31 @@ Everything — notes, kanban cards, window positions — lives in `chrome.storag
 
 ---
 
-## What it looks like
+## Privacy and security
 
-### The main dashboard
+This extension makes **zero external network requests**. No analytics, no telemetry, no ads, no third-party services. All data stays in your browser.
 
-<img src="screen_shots\dashboard.png">
+**Permissions used:**
 
-```
-  ● = red dot (close)   
-  ● = yellow dot (minimise to title bar)
-  ● = green dot (restore) 
-  drag title bar to move, corner to resize
-```
+| Permission | Reason |
+|---|---|
+| `tabs` | Read open tab titles and URLs for the Tab Manager |
+| `storage` | Persist notes, kanban data, and window layout |
 
-### Tab Manager — find any tab instantly
+No `<all_urls>`, no content scripts, no access to page content.
 
-<img src="screen_shots\tab_manager.png">
+**Security hardening:**
 
-```
-Export dropdown:
-  ┌─────────────────────────┐
-  │ Copy as Markdown        │  ← instant clipboard
-  │ Copy as Text            │  ← instant clipboard
-  │ ─────────────────────── │
-  │ Download CSV            │  ← file download
-  │ Download Markdown       │
-  │ Download plain text     │
-  └─────────────────────────┘
-```
-
-Click a row to jump to that tab. Filter by audio/pinned/active. Export the current filtered view — handy for saving tabs for later or sharing.
-
-<img src="screen_shots\tab_manager_filtered.png">
-
-### Kanban Board — your workflow, your columns
-
-Add a new Kanban board with `+MODULE`, add a name, configure your board, and customize your tags.
-
-<img src="screen_shots\kanban_config.png">
-
-<img src="screen_shots\kanban.png">
-
-```
-  ⠿ = drag column header to reorder
-  ⊞ = cycle layout: row → 2×2 → 3×2
-  ⋮⋮ = edit columns and tags
-```
-
-### Quick Notes — synced scratch pad
-
-<img src="screen_shots\notepad.png">
-
-```
-sync dot: 
-yellow = saving 
-green = synced
-red = quota exceeded (still saves locally)
-```
-
-### Pomodoro Timer
-
-<img src="screen_shots\pomodoro_full.png">
+- All user and storage-sourced data rendered via DOM API only — no `innerHTML` with variable data anywhere in the codebase
+- `sec.shell()` tagged template enforces alphanumeric-only interpolated values at runtime and throws on violation
+- `sec.safeColor()` validates hex colours from storage against a strict regex before any style assignment
+- `sec.attr()` blocks `javascript:`, `data:`, and `vbscript:` URIs on navigable attributes
+- Dynamic styles use individual `.style` property assignments — no `cssText` with variable data
+- Favicon URLs validated to `https://` or `chrome-extension://` schemes only before being set as `src`
+- Layout data sanitized on load: types coerced, numeric values clamped to valid ranges, module types validated against a whitelist
+- Strict CSP in `manifest.json`: `script-src 'self'; object-src 'none'; base-uri 'none'`
+- No external font CDN — system font stack only (no Google Fonts)
+- `chrome.storage.sync` errors are logged; quota failures degrade gracefully to local-only with a visible red indicator dot
 
 ---
 
@@ -141,41 +295,14 @@ Notes and Kanban data sync across all Chrome instances signed in to the same Goo
 
 ---
 
-## Privacy and security
-
-This extension makes **zero external network requests**. No analytics, no telemetry, no ads, no third-party services. All data stays in your browser.
-
-**Permissions used:**
-
-| Permission | Reason |
-|---|---|
-| `tabs` | Read open tab titles and URLs for the Tab Manager |
-| `storage` | Persist notes, kanban data, and window layout |
-
-No `<all_urls>`, no content scripts, no access to page content.
-
-**Security hardening:**
-
-- All user and storage-sourced data rendered via DOM API only — no `innerHTML` with variable data anywhere in the codebase
-- `sec.shell()` tagged template enforces alphanumeric-only interpolated values at runtime and throws on violation
-- `sec.safeColor()` validates hex colours from storage against a strict regex before any style assignment
-- `sec.attr()` blocks `javascript:`, `data:`, and `vbscript:` URIs on navigable attributes
-- Dynamic styles use individual `.style` property assignments — no `cssText` with variable data
-- Favicon URLs validated to `https://` or `chrome-extension://` schemes only before being set as `src`
-- Layout data sanitized on load: types coerced, numeric values clamped to valid ranges, module types validated against a whitelist
-- Strict CSP in `manifest.json`: `script-src 'self'; object-src 'none'; base-uri 'none'`
-- No external font CDN — system font stack only (no Google Fonts)
-- `chrome.storage.sync` errors are logged; quota failures degrade gracefully to local-only with a visible red indicator dot
-
----
-
 ## Project structure
 
 ```
 newtab-dashboard/
 ├── manifest.json          Chrome extension manifest (Manifest V3)
 ├── newtab.html            New tab page entry point
-├── style.css              All styles and design tokens
+├── themes.css             Theme token definitions (6 themes)
+├── style.css              All structural styles and layout
 ├── security.js            Sanitization helpers + SyncStore class
 ├── dashboard.js           Window management, drag/resize, module picker
 ├── modules/

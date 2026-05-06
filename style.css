@@ -1,25 +1,11 @@
 /* ─────────────────────────────────────────────
-   Design tokens
+   Design tokens — base values only.
+   All theme-specific overrides live in themes.css.
+   Load order: themes.css first, then style.css.
 ───────────────────────────────────────────── */
 :root {
-  --bg:        #0e0f11;
-  --surface:   #16181c;
-  --surface2:  #1e2128;
-  --surface3:  #252830;
-  --border:    rgba(255,255,255,0.07);
-  --border2:   rgba(255,255,255,0.12);
-  --text:      #e8eaf0;
-  --text-dim:  #7a7f8e;
-  --text-xdim: #454850;
-  --accent:    #5b8cff;
-  --accent2:   #a78bfa;
-  --danger:    #ff5f6d;
-  --green:     #3ecf8e;
-  --yellow:    #f5c542;
   --radius:    10px;
   --radius-sm: 6px;
-  --shadow:    0 8px 40px rgba(0,0,0,0.55);
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.4);
   --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', 'Consolas', 'SF Mono', monospace;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --header-h:  54px;
@@ -52,10 +38,9 @@ input, textarea { font-family: inherit; color: inherit; }
   width: 100vw; height: 100vh;
   display: flex; flex-direction: column;
   position: relative;
-  /* subtle grid texture */
   background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -70,7 +55,7 @@ input, textarea { font-family: inherit; color: inherit; }
   justify-content: space-between;
   padding: 0 24px;
   border-bottom: 1px solid var(--border);
-  background: rgba(14,15,17,0.85);
+  background: var(--topbar-bg);
   backdrop-filter: blur(12px);
   position: relative;
   z-index: 100;
@@ -116,9 +101,11 @@ input, textarea { font-family: inherit; color: inherit; }
   border-color: var(--accent);
 }
 
-/* ─────────────────────────────────────────────
-   Canvas
-───────────────────────────────────────────── */
+#top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 #canvas {
   flex: 1;
   position: relative;
@@ -233,7 +220,7 @@ input, textarea { font-family: inherit; color: inherit; }
 #module-picker {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
   z-index: 999;
   display: flex;
@@ -446,7 +433,7 @@ input, textarea { font-family: inherit; color: inherit; }
   transition: all 0.12s;
 }
 .tab-row:hover .tab-close-btn { opacity: 1; }
-.tab-close-btn:hover { background: rgba(255,95,109,0.2); color: var(--danger); }
+.tab-close-btn:hover { background: var(--danger-tint); color: var(--danger); }
 
 .tab-count-label {
   font-size: 10px;
@@ -515,7 +502,7 @@ input, textarea { font-family: inherit; color: inherit; }
 }
 .kanban-col.drag-over {
   border-color: var(--accent);
-  background: rgba(91,140,255,0.05);
+  background: var(--accent-tint);
 }
 
 .kanban-col-header {
@@ -614,7 +601,7 @@ input, textarea { font-family: inherit; color: inherit; }
   color: var(--text-xdim);
   transition: all 0.1s;
 }
-.card-action-btn:hover { background: var(--surface2); color: var(--danger); }
+.card-action-btn:hover { background: var(--danger-tint); color: var(--danger); }
 
 /* Add card inline */
 .kanban-add-card-btn {
@@ -632,14 +619,14 @@ input, textarea { font-family: inherit; color: inherit; }
 .kanban-add-card-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(91,140,255,0.05);
+  background: var(--accent-tint);
 }
 
 /* Add task modal */
 .task-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
   z-index: 500;
   display: flex;
@@ -712,12 +699,12 @@ input, textarea { font-family: inherit; color: inherit; }
 }
 .modal-btn-add:hover { filter: brightness(1.1); }
 
-/* Tag colors */
-.tag-feature  { background: rgba(91,140,255,0.15); color: #7aadff; }
-.tag-bug      { background: rgba(255,95,109,0.15); color: #ff8a93; }
-.tag-idea     { background: rgba(167,139,250,0.15); color: #c4b0fd; }
-.tag-task     { background: rgba(62,207,142,0.15); color: #6fddb0; }
-.tag-research { background: rgba(245,197,66,0.15); color: #f5d473; }
+/* Tag colors — use accent-tint opacity so they adapt across themes */
+.tag-feature  { background: rgba(91,140,255,0.14);  color: var(--accent); }
+.tag-bug      { background: var(--danger-tint);      color: var(--danger); }
+.tag-idea     { background: rgba(167,139,250,0.14);  color: var(--accent2); }
+.tag-task     { background: rgba(62,207,142,0.14);   color: var(--green); }
+.tag-research { background: rgba(245,197,66,0.14);   color: var(--yellow); }
 
 /* ─────────────────────────────────────────────
    Kanban grid layouts
@@ -783,7 +770,7 @@ input, textarea { font-family: inherit; color: inherit; }
 
 .kanban-col.col-drag-over {
   border-color: var(--accent2);
-  background: rgba(167,139,250,0.06);
+  background: var(--accent2-tint);
 }
 
 /* ─────────────────────────────────────────────
@@ -809,7 +796,7 @@ input, textarea { font-family: inherit; color: inherit; }
 }
 .col-picker-btn.selected {
   border-color: var(--accent);
-  background: rgba(91,140,255,0.1);
+  background: var(--accent-tint);
   color: var(--text);
 }
 .cpb-dot {
@@ -885,7 +872,7 @@ input, textarea { font-family: inherit; color: inherit; }
 .name-prompt-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
@@ -961,7 +948,7 @@ input, textarea { font-family: inherit; color: inherit; }
   width: 14px; height: 14px;
   border-radius: 3px;
   flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid var(--border2);
 }
 .tag-list-label {
   flex: 1;
@@ -977,7 +964,7 @@ input, textarea { font-family: inherit; color: inherit; }
   transition: all 0.1s;
   flex-shrink: 0;
 }
-.tag-delete-btn:hover { background: rgba(255,95,109,0.2); color: var(--danger); }
+.tag-delete-btn:hover { background: var(--danger-tint); color: var(--danger); }
 .tag-add-row {
   display: flex;
   gap: 6px;
@@ -1062,7 +1049,7 @@ input, textarea { font-family: inherit; color: inherit; }
 .note-item:hover { background: var(--surface3); }
 .note-item.active {
   border-left-color: var(--accent);
-  background: rgba(91,140,255,0.08);
+  background: var(--accent-tint);
 }
 .note-item-title {
   font-size: 12px;
@@ -1119,7 +1106,7 @@ input, textarea { font-family: inherit; color: inherit; }
   transition: all 0.1s;
 }
 .notes-action-btn:hover { background: var(--surface3); color: var(--text); }
-.notes-delete-btn:hover { background: rgba(255,95,109,0.15); color: var(--danger); }
+.notes-delete-btn:hover { background: var(--danger-tint); color: var(--danger); }
 
 .notes-body {
   flex: 1;
@@ -1328,7 +1315,113 @@ input, textarea { font-family: inherit; color: inherit; }
 .pomo-save-cfg:hover { filter: brightness(1.1); }
 
 /* ─────────────────────────────────────────────
+   Theme switcher panel
+───────────────────────────────────────────── */
+#settings-btn {
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+#settings-btn:hover {
+  background: var(--surface3);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+#settings-panel {
+  position: fixed;
+  top: calc(var(--header-h) + 8px);
+  right: 16px;
+  width: 260px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 200;
+  overflow: hidden;
+  transform-origin: top right;
+  transition: opacity 0.15s, transform 0.15s;
+}
+#settings-panel.hidden {
+  display: none;
+}
+
+.settings-header {
+  padding: 14px 16px 10px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+}
+
+.theme-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 10px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: left;
+}
+.theme-btn:hover {
+  border-color: var(--border2);
+  background: var(--surface3);
+}
+.theme-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.theme-swatch {
+  width: 100%;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  overflow: hidden;
+}
+.swatch-bg   { flex: 2; border-radius: 2px; }
+.swatch-card { flex: 3; border-radius: 2px; }
+.swatch-acc  { flex: 1; border-radius: 2px; }
+
+.theme-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.theme-btn.active .theme-label {
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────────
    Scrollbar base
 ───────────────────────────────────────────── */
 * { scrollbar-width: thin; scrollbar-color: var(--surface3) transparent; }
+
 

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard</title>
-  <!-- No external font CDN — system fonts only for CSP compliance and privacy -->
+  <!-- themes.css MUST load before style.css — it defines all CSS custom properties -->
+  <link rel="stylesheet" href="themes.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -16,9 +17,73 @@
       </div>
       <div id="top-actions">
         <button id="add-module-btn" title="Add module">+ Module</button>
+        <button id="settings-btn" title="Settings">⚙</button>
       </div>
     </header>
 
+    <!-- Settings panel -->
+    <div id="settings-panel" class="hidden">
+      <div class="settings-header">Theme</div>
+      <div class="theme-grid">
+
+        <button class="theme-btn" data-theme="dark">
+          <div class="theme-swatch">
+            <div class="swatch-bg"   style="background:#0e0f11"></div>
+            <div class="swatch-card" style="background:#1e2128"></div>
+            <div class="swatch-acc"  style="background:#5b8cff"></div>
+          </div>
+          <span class="theme-label">Dark</span>
+        </button>
+
+        <button class="theme-btn" data-theme="light">
+          <div class="theme-swatch">
+            <div class="swatch-bg"   style="background:#f0f2f5"></div>
+            <div class="swatch-card" style="background:#ffffff"></div>
+            <div class="swatch-acc"  style="background:#3d6ef5"></div>
+          </div>
+          <span class="theme-label">Light</span>
+        </button>
+
+        <button class="theme-btn" data-theme="solarized-light">
+          <div class="theme-swatch">
+            <div class="swatch-bg"   style="background:#fdf6e3"></div>
+            <div class="swatch-card" style="background:#eee8d5"></div>
+            <div class="swatch-acc"  style="background:#268bd2"></div>
+          </div>
+          <span class="theme-label">Solarized Light</span>
+        </button>
+
+        <button class="theme-btn" data-theme="solarized-dark">
+          <div class="theme-swatch">
+            <div class="swatch-bg"   style="background:#002b36"></div>
+            <div class="swatch-card" style="background:#073642"></div>
+            <div class="swatch-acc"  style="background:#268bd2"></div>
+          </div>
+          <span class="theme-label">Solarized Dark</span>
+        </button>
+
+        <button class="theme-btn" data-theme="fivethirtyeight">
+          <div class="theme-swatch">
+            <div class="swatch-bg"   style="background:#f0eeeb"></div>
+            <div class="swatch-card" style="background:#ffffff"></div>
+            <div class="swatch-acc"  style="background:#e34040"></div>
+          </div>
+          <span class="theme-label">FiveThirtyEight</span>
+        </button>
+
+        <button class="theme-btn" data-theme="cyberpunk">
+          <div class="theme-swatch">
+            <div class="swatch-bg"   style="background:#080810"></div>
+            <div class="swatch-card" style="background:#12122a"></div>
+            <div class="swatch-acc"  style="background:#ff2d78"></div>
+          </div>
+          <span class="theme-label">Cyberpunk</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Module picker overlay -->
     <div id="module-picker" class="hidden">
       <div id="module-picker-inner">
         <h3>Add Module</h3>

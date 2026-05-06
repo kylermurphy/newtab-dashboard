@@ -1,0 +1,304 @@
+/* themes.css — all theme token definitions
+ *
+ * Applied via:  document.documentElement.dataset.theme = 'dark'
+ * Switched by:  dashboard.js applyTheme()
+ *
+ * Every theme defines the complete token set so no variable is ever
+ * left undefined. Structural tokens (--radius, --header-h, --font-*)
+ * are included per-theme so individual themes can override them
+ * (e.g. FiveThirtyEight uses serif fonts, Cyberpunk uses monospace).
+ */
+
+/* ═══════════════════════════════════════════════
+   1. DARK  (original / default)
+═══════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:         #0e0f11;
+  --surface:    #16181c;
+  --surface2:   #1e2128;
+  --surface3:   #252830;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.12);
+  --text:       #e8eaf0;
+  --text-dim:   #7a7f8e;
+  --text-xdim:  #454850;
+  --accent:     #5b8cff;
+  --accent2:    #a78bfa;
+  --accent2-tint: rgba(167,139,250,0.10);
+  --accent-tint: rgba(91,140,255,0.10);
+  --danger:     #ff5f6d;
+  --danger-tint: rgba(255,95,109,0.12);
+  --green:      #3ecf8e;
+  --yellow:     #f5c542;
+  --topbar-bg:  rgba(14,15,17,0.88);
+  --overlay-bg: rgba(0,0,0,0.60);
+  --grid-line:  rgba(255,255,255,0.016);
+  --shadow:     0 8px 40px rgba(0,0,0,0.55);
+  --shadow-sm:  0 2px 12px rgba(0,0,0,0.40);
+  --radius:     10px;
+  --radius-sm:  6px;
+  --header-h:   54px;
+  --font-mono:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+  --font-sans:  -apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Helvetica Neue',Arial,sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   2. LIGHT
+   Clean white surfaces stepping into a cool-grey
+   page. Blue accent at full saturation. Shadows
+   are subtle and warm-toned.
+═══════════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg:         #f0f2f5;
+  --surface:    #ffffff;
+  --surface2:   #f5f6f8;
+  --surface3:   #eaecf0;
+  --border:     rgba(0,0,0,0.08);
+  --border2:    rgba(0,0,0,0.14);
+  --text:       #1a1d23;
+  --text-dim:   #5c6370;
+  --text-xdim:  #a0a7b2;
+  --accent:     #3d6ef5;
+  --accent2:    #7c4dff;
+  --accent2-tint: rgba(124,77,255,0.09);
+  --accent-tint: rgba(61,110,245,0.08);
+  --danger:     #e53935;
+  --danger-tint: rgba(229,57,53,0.09);
+  --green:      #2e9e6a;
+  --yellow:     #d4940a;
+  --topbar-bg:  rgba(240,242,245,0.90);
+  --overlay-bg: rgba(0,0,0,0.32);
+  --grid-line:  rgba(0,0,0,0.04);
+  --shadow:     0 4px 24px rgba(0,0,0,0.10);
+  --shadow-sm:  0 1px 6px rgba(0,0,0,0.07);
+  --radius:     10px;
+  --radius-sm:  6px;
+  --header-h:   54px;
+  --font-mono:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+  --font-sans:  -apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Helvetica Neue',Arial,sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   3. SOLARIZED LIGHT
+   Ethan Schoonover's canonical palette.
+   Warm cream base (base3), stepping through
+   base2 → base1 for surfaces. Accent: blue,
+   secondary: cyan. Typography in base01/base00.
+═══════════════════════════════════════════════ */
+[data-theme="solarized-light"] {
+  --bg:         #fdf6e3;
+  --surface:    #eee8d5;
+  --surface2:   #e4dfc9;
+  --surface3:   #d9d4bc;
+  --border:     rgba(88,110,117,0.18);
+  --border2:    rgba(88,110,117,0.32);
+  --text:       #073642;
+  --text-dim:   #586e75;
+  --text-xdim:  #93a1a1;
+  --accent:     #268bd2;
+  --accent2:    #2aa198;
+  --accent2-tint: rgba(42,161,152,0.10);
+  --accent-tint: rgba(38,139,210,0.10);
+  --danger:     #dc322f;
+  --danger-tint: rgba(220,50,47,0.10);
+  --green:      #859900;
+  --yellow:     #b58900;
+  --topbar-bg:  rgba(238,232,213,0.92);
+  --overlay-bg: rgba(0,43,54,0.35);
+  --grid-line:  rgba(88,110,117,0.06);
+  --shadow:     0 4px 20px rgba(0,43,54,0.12);
+  --shadow-sm:  0 1px 6px rgba(0,43,54,0.08);
+  --radius:     10px;
+  --radius-sm:  6px;
+  --header-h:   54px;
+  --font-mono:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+  --font-sans:  -apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Helvetica Neue',Arial,sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   4. SOLARIZED DARK
+   Same palette, dark mode inversion.
+   base03 → base02 → base01 for depth.
+   Accent set identical to solarized-light.
+═══════════════════════════════════════════════ */
+[data-theme="solarized-dark"] {
+  --bg:         #002b36;
+  --surface:    #073642;
+  --surface2:   #0d4052;
+  --surface3:   #144f63;
+  --border:     rgba(147,161,161,0.12);
+  --border2:    rgba(147,161,161,0.22);
+  --text:       #fdf6e3;
+  --text-dim:   #93a1a1;
+  --text-xdim:  #586e75;
+  --accent:     #268bd2;
+  --accent2:    #2aa198;
+  --accent2-tint: rgba(42,161,152,0.10);
+  --accent-tint: rgba(38,139,210,0.12);
+  --danger:     #dc322f;
+  --danger-tint: rgba(220,50,47,0.12);
+  --green:      #859900;
+  --yellow:     #b58900;
+  --topbar-bg:  rgba(0,43,54,0.90);
+  --overlay-bg: rgba(0,0,0,0.55);
+  --grid-line:  rgba(147,161,161,0.04);
+  --shadow:     0 8px 36px rgba(0,0,0,0.50);
+  --shadow-sm:  0 2px 10px rgba(0,0,0,0.35);
+  --radius:     10px;
+  --radius-sm:  6px;
+  --header-h:   54px;
+  --font-mono:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+  --font-sans:  -apple-system,BlinkMacSystemFont,'Segoe UI','Inter','Helvetica Neue',Arial,sans-serif;
+}
+
+/* ═══════════════════════════════════════════════
+   5. FIVETHIRTYEIGHT
+   Editorial newspaper aesthetic: warm off-white
+   field, clean white cards, sharp red accent.
+   Serif body font. Near-square corners. Strong
+   ruled borders. Red top-border on module windows.
+═══════════════════════════════════════════════ */
+[data-theme="fivethirtyeight"] {
+  --bg:         #f0eeeb;
+  --surface:    #ffffff;
+  --surface2:   #f7f5f2;
+  --surface3:   #ede9e4;
+  --border:     rgba(0,0,0,0.12);
+  --border2:    rgba(0,0,0,0.22);
+  --text:       #0d0d0d;
+  --text-dim:   #555350;
+  --text-xdim:  #9e9b97;
+  --accent:     #e34040;
+  --accent2:    #c0392b;
+  --accent2-tint: rgba(192,57,43,0.08);
+  --accent-tint: rgba(227,64,64,0.07);
+  --danger:     #c0392b;
+  --danger-tint: rgba(192,57,43,0.09);
+  --green:      #27ae60;
+  --yellow:     #e67e22;
+  --topbar-bg:  rgba(240,238,235,0.94);
+  --overlay-bg: rgba(0,0,0,0.40);
+  --grid-line:  rgba(0,0,0,0.055);
+  --shadow:     0 2px 12px rgba(0,0,0,0.08);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.06);
+  --radius:     3px;
+  --radius-sm:  2px;
+  --header-h:   54px;
+  --font-mono:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+  --font-sans:  Georgia,'Times New Roman',serif;
+}
+
+/* FiveThirtyEight structural overrides */
+[data-theme="fivethirtyeight"] .module-window {
+  border-top: 3px solid #e34040;
+  border-left: 1px solid rgba(0,0,0,0.14);
+  border-right: 1px solid rgba(0,0,0,0.14);
+  border-bottom: 1px solid rgba(0,0,0,0.14);
+}
+[data-theme="fivethirtyeight"] .module-titlebar {
+  border-bottom: 2px solid rgba(0,0,0,0.12);
+}
+[data-theme="fivethirtyeight"] .kanban-col-header {
+  border-bottom: 2px solid rgba(0,0,0,0.10);
+}
+[data-theme="fivethirtyeight"] .chip.active {
+  background: #e34040;
+  border-color: #e34040;
+}
+
+/* ═══════════════════════════════════════════════
+   6. CYBERPUNK
+   Deep navy-black base, electric magenta + cyan
+   neons. Zero border-radius — everything is sharp.
+   Both body and code fonts are monospace for a
+   terminal-in-a-hacker-den feel. Surfaces emit a
+   faint neon glow through box-shadow.
+═══════════════════════════════════════════════ */
+[data-theme="cyberpunk"] {
+  --bg:         #080810;
+  --surface:    #0e0e22;
+  --surface2:   #12122a;
+  --surface3:   #191932;
+  --border:     rgba(255,45,120,0.18);
+  --border2:    rgba(255,45,120,0.38);
+  --text:       #f0efff;
+  --text-dim:   #9b9bc8;
+  --text-xdim:  #4a4a70;
+  --accent:     #ff2d78;
+  --accent2:    #00e5ff;
+  --accent2-tint: rgba(0,229,255,0.10);
+  --accent-tint: rgba(255,45,120,0.12);
+  --danger:     #ff2d78;
+  --danger-tint: rgba(255,45,120,0.14);
+  --green:      #00e5a0;
+  --yellow:     #ffe600;
+  --topbar-bg:  rgba(8,8,16,0.92);
+  --overlay-bg: rgba(0,0,8,0.72);
+  --grid-line:  rgba(255,45,120,0.055);
+  --shadow:     0 0 40px rgba(255,45,120,0.14), 0 8px 32px rgba(0,0,0,0.70);
+  --shadow-sm:  0 0 12px rgba(255,45,120,0.10), 0 2px 8px rgba(0,0,0,0.50);
+  --radius:     0px;
+  --radius-sm:  0px;
+  --header-h:   54px;
+  --font-mono:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+  --font-sans:  ui-monospace,'Cascadia Code','Fira Code','Consolas','SF Mono',monospace;
+}
+
+/* Cyberpunk neon glow overrides */
+[data-theme="cyberpunk"] .module-window {
+  border-color: rgba(255,45,120,0.32);
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.06) inset,
+    0 0 30px rgba(255,45,120,0.12),
+    0 8px 32px rgba(0,0,0,0.70);
+}
+[data-theme="cyberpunk"] .module-window:hover {
+  border-color: rgba(255,45,120,0.55);
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,0.10) inset,
+    0 0 40px rgba(255,45,120,0.20),
+    0 8px 32px rgba(0,0,0,0.70);
+}
+[data-theme="cyberpunk"] .module-titlebar {
+  border-bottom: 1px solid rgba(0,229,255,0.18);
+}
+[data-theme="cyberpunk"] .chip.active {
+  background: #ff2d78;
+  border-color: #ff2d78;
+  box-shadow: 0 0 10px rgba(255,45,120,0.45);
+  color: #fff;
+}
+[data-theme="cyberpunk"] .mod-search:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 8px rgba(0,229,255,0.28);
+  outline: none;
+}
+[data-theme="cyberpunk"] .kanban-col {
+  border-color: rgba(0,229,255,0.12);
+}
+[data-theme="cyberpunk"] .kanban-col.drag-over {
+  border-color: #00e5ff;
+  box-shadow: 0 0 18px rgba(0,229,255,0.22);
+  background: rgba(0,229,255,0.04);
+}
+[data-theme="cyberpunk"] .kanban-card:hover {
+  border-color: rgba(255,45,120,0.45);
+  box-shadow: 0 0 12px rgba(255,45,120,0.14);
+}
+[data-theme="cyberpunk"] .pomo-ring-fill {
+  stroke: #ff2d78;
+  filter: drop-shadow(0 0 6px rgba(255,45,120,0.55));
+}
+[data-theme="cyberpunk"] .sync-synced {
+  background: #00e5a0;
+  box-shadow: 0 0 6px rgba(0,229,160,0.60);
+}
+[data-theme="cyberpunk"] .tab-export-btn:hover,
+[data-theme="cyberpunk"] #add-module-btn:hover {
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+[data-theme="cyberpunk"] .notes-action-btn:hover {
+  background: rgba(255,45,120,0.15);
+  color: #ff2d78;
+}

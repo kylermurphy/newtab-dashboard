@@ -1,6 +1,50 @@
 /* dashboard.js — hardened orchestration */
 'use strict';
 
+// ── Theme switcher ─────────────────────────────────────────────────────────
+(function themes() {
+  const THEME_KEY    = 'dashboard_theme';
+  const VALID_THEMES = new Set(['dark','light','solarized-light','solarized-dark','fivethirtyeight','cyberpunk']);
+  const settingsBtn  = document.getElementById('settings-btn');
+  const settingsPanel= document.getElementById('settings-panel');
+  const themeBtns    = document.querySelectorAll('.theme-btn[data-theme]');
+
+  function applyTheme(theme) {
+    if (!VALID_THEMES.has(theme)) theme = 'dark';
+    document.documentElement.dataset.theme = theme;
+    themeBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === theme);
+    });
+    chrome.storage.local.set({ [THEME_KEY]: theme });
+  }
+
+  // Load saved theme
+  chrome.storage.local.get([THEME_KEY], res => {
+    applyTheme(res[THEME_KEY] || 'dark');
+  });
+
+  // Settings gear toggle
+  settingsBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    settingsPanel.classList.toggle('hidden');
+  });
+
+  // Close settings when clicking outside
+  document.addEventListener('click', e => {
+    if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+      settingsPanel.classList.add('hidden');
+    }
+  });
+
+  // Theme buttons
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      applyTheme(btn.dataset.theme);
+    });
+  });
+})();
+
+
 // ── Clock ──────────────────────────────────────────────────────────────────
 (function clock() {
   const clockEl = document.getElementById('clock');
@@ -321,6 +365,7 @@ function showNamePrompt(defaultName, onConfirm) {
     if (e.key === 'Escape') close();
   });
 }
+
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 loadLayout(data => {
