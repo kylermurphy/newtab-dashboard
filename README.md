@@ -7,7 +7,7 @@ A modular, privacy-first productivity dashboard that replaces Chrome's new tab p
 ## Why it exists
 Most new tab extensions are either too simple (just a clock and a background) or too heavy (cloud accounts, trackers, ads). This one sits in the middle: a  workspace you can customise, built entirely on Chrome's own APIs, with no servers, no extnesion accounts, and no data leaving the browser.
 
-Everything — notes, kanban cards, window positions — lives in `chrome.storage`. Notes and Kanban boards sync  across your Chrome profile using `chrome.storage.sync`, the same secure channel Chrome uses for bookmarks.
+Everything — notes, kanban cards, window positions — lives in `chrome.storage`. Notes and Kanban boards **sync** across your Chrome profile using `chrome.storage.sync`, the same secure channel Chrome uses for bookmarks.
 
 ---
 
@@ -33,7 +33,7 @@ Everything — notes, kanban cards, window positions — lives in `chrome.storag
 
 ### The main dashboard
 
-![Dashboard](screen_shots\dashboard.png)
+<img src="screen_shots\dashboard.png">
 
 ```
   ● = red dot (close)   
@@ -44,7 +44,7 @@ Everything — notes, kanban cards, window positions — lives in `chrome.storag
 
 ### Tab Manager — find any tab instantly
 
-<img src="screen_shots\tab_manager.png" width=300>
+<img src="screen_shots\tab_manager.png">
 
 ```
 Export dropdown:
@@ -60,7 +60,7 @@ Export dropdown:
 
 Click a row to jump to that tab. Filter by audio/pinned/active. Export the current filtered view — handy for saving tabs for later or sharing.
 
-<img src="screen_shots\tab_manager_filtered.png" width=300>
+<img src="screen_shots\tab_manager_filtered.png">
 
 ### Kanban Board — your workflow, your columns
 
@@ -90,36 +90,6 @@ red = quota exceeded (still saves locally)
 ### Pomodoro Timer
 
 <img src="screen_shots\pomodoro_full.png">
-
-
-
----
-
-## Privacy and security
-
-This extension makes **zero external network requests**. No analytics, no telemetry, no ads, no third-party services. All data stays in your browser.
-
-**Permissions used:**
-
-| Permission | Reason |
-|---|---|
-| `tabs` | Read open tab titles and URLs for the Tab Manager |
-| `storage` | Persist notes, kanban data, and window layout |
-
-No `<all_urls>`, no content scripts, no access to page content.
-
-**Security hardening:**
-
-- All user and storage-sourced data rendered via DOM API only — no `innerHTML` with variable data anywhere in the codebase
-- `sec.shell()` tagged template enforces alphanumeric-only interpolated values at runtime and throws on violation
-- `sec.safeColor()` validates hex colours from storage against a strict regex before any style assignment
-- `sec.attr()` blocks `javascript:`, `data:`, and `vbscript:` URIs on navigable attributes
-- Dynamic styles use individual `.style` property assignments — no `cssText` with variable data
-- Favicon URLs validated to `https://` or `chrome-extension://` schemes only before being set as `src`
-- Layout data sanitized on load: types coerced, numeric values clamped to valid ranges, module types validated against a whitelist
-- Strict CSP in `manifest.json`: `script-src 'self'; object-src 'none'; base-uri 'none'`
-- No external font CDN — system font stack only (no Google Fonts)
-- `chrome.storage.sync` errors are logged; quota failures degrade gracefully to local-only with a visible red indicator dot
 
 ---
 
@@ -168,6 +138,34 @@ Notes and Kanban data sync across all Chrome instances signed in to the same Goo
 | Kanban column order and tags | ✅ |
 | Panel window positions and sizes | ❌ (local only — screen layouts differ per device) |
 | Pomodoro settings | ❌ (local only) |
+
+---
+
+## Privacy and security
+
+This extension makes **zero external network requests**. No analytics, no telemetry, no ads, no third-party services. All data stays in your browser.
+
+**Permissions used:**
+
+| Permission | Reason |
+|---|---|
+| `tabs` | Read open tab titles and URLs for the Tab Manager |
+| `storage` | Persist notes, kanban data, and window layout |
+
+No `<all_urls>`, no content scripts, no access to page content.
+
+**Security hardening:**
+
+- All user and storage-sourced data rendered via DOM API only — no `innerHTML` with variable data anywhere in the codebase
+- `sec.shell()` tagged template enforces alphanumeric-only interpolated values at runtime and throws on violation
+- `sec.safeColor()` validates hex colours from storage against a strict regex before any style assignment
+- `sec.attr()` blocks `javascript:`, `data:`, and `vbscript:` URIs on navigable attributes
+- Dynamic styles use individual `.style` property assignments — no `cssText` with variable data
+- Favicon URLs validated to `https://` or `chrome-extension://` schemes only before being set as `src`
+- Layout data sanitized on load: types coerced, numeric values clamped to valid ranges, module types validated against a whitelist
+- Strict CSP in `manifest.json`: `script-src 'self'; object-src 'none'; base-uri 'none'`
+- No external font CDN — system font stack only (no Google Fonts)
+- `chrome.storage.sync` errors are logged; quota failures degrade gracefully to local-only with a visible red indicator dot
 
 ---
 
