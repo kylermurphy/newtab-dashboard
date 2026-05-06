@@ -5,182 +5,9 @@ A modular, privacy-first productivity dashboard that replaces Chrome's new tab p
 ---
 
 ## Why it exists
+Most new tab extensions are either too simple (just a clock and a background) or too heavy (cloud accounts, trackers, ads). This one sits in the middle: a  workspace you can customise, built entirely on Chrome's own APIs, with no servers, no extnesion accounts, and no data leaving the browser.
 
-Most new tab extensions are either too simple (just a clock and a background) or too heavy (cloud accounts, trackers, ads). This one sits in the middle: a real workspace you can customise, built entirely on Chrome's own APIs, with no servers, no accounts, and no data ever leaving your browser.
-
-Everything — notes, kanban cards, window positions — lives in `chrome.storage`. Notes and Kanban boards sync automatically across your Chrome profile using `chrome.storage.sync`, the same secure channel Chrome uses for bookmarks and passwords.
-
----
-
-## What it looks like
-
-### The main dashboard
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│  14:32   SAT, MAY 3                                        + Module      │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ╔═══════════════════╗   ╔══════════════════════════════════════════╗    │
-│  ║ ● ─ ○  Tab Mgr   ║   ║ ● ─ ○  My Project Kanban               ║    │
-│  ╠═══════════════════╣   ╠══════════════════════════════════════════╣    │
-│  ║ 🔍 Search tabs…  ║   ║ 🔍 Search   + Add Card  ⊞  ⋮⋮         ║    │
-│  ║ All  🔊  📌  ●   ║   ║ All  Feature  Bug  Task  Idea           ║    │
-│  ║ 12 of 34 tabs ↓  ║   ╠══════════════╦═════════╦════════════════╣    │
-│  ╠═══════════════════╣   ║  TO DO     3 ║ DOING 2 ║  DONE       4  ║    │
-│  ║ ◉ github.com/dash ║   ║ ┌──────────┐ ║ ┌─────┐ ║ ┌───────────┐ ║    │
-│  ║   notion.so       ║   ║ │ API docs │ ║ │Auth │ ║ │ Design    │ ║    │
-│  ║   figma.com/proto ║   ║ │[Feature] │ ║ │[Bug]│ ║ │[Task]     │ ║    │
-│  ║   localhost:3000  ║   ║ └──────────┘ ║ └─────┘ ║ └───────────┘ ║    │
-│  ╚═══════════════════╝   ╚══════════════╩═════════╩════════════════╝    │
-│                                                                          │
-│  ╔══════════════════════════╗   ╔════════════════════╗                   │
-│  ║ ● ─ ○  Notes         ●  ║   ║ ● ─ ○  Pomodoro   ║                   │
-│  ╠══════════════╦═══════════╣   ╠════════════════════╣                   │
-│  ║ Meeting notes║ Client    ║   ║ Focus  Short  Long  ║                   │
-│  ║ Sprint plan  ║ called    ║   ║    ╭──────────╮    ║                   │
-│  ║ Ideas        ║ re: API   ║   ║    │  24:17   │    ║                   │
-│  ║              ║ changes…  ║   ║    │  Focus   │    ║                   │
-│  ║              ╠═══════════╣   ║    ╰──────────╯    ║                   │
-│  ║              ║ 42w · 198 ║   ║  [ Pause ]  [ ↺ ] ║                   │
-│  ╚══════════════╩═══════════╝   ╚════════════════════╝                   │
-└──────────────────────────────────────────────────────────────────────────┘
-
-  ● = red dot (close)   ─ = yellow dot (minimise to title bar)
-  ○ = green dot (restore)    drag title bar to move, corner to resize
-```
-
-### Tab Manager — find any tab instantly
-
-```
-╔══════════════════════════════════════╗
-║ ● ─ ○  Tab Manager                  ║
-╠══════════════════════════════════════╣
-║  🔍  github                          ║
-║  All   🔊 Audio   📌 Pinned  ● Active║
-║  3 of 34 tabs             ↓ Export  ║
-╠══════════════════════════════════════╣
-║  ◉  github.com / dashboard      ✕   ║
-║     github.com                       ║
-║     GitHub Actions — CI build    ✕   ║
-║     github.com/actions/runs           ║
-║     Pull Request #184 — fixes    ✕   ║
-║     github.com/pulls/184             ║
-╚══════════════════════════════════════╝
-
-Export dropdown:
-  ┌─────────────────────────┐
-  │ Copy as Markdown        │  ← instant clipboard
-  │ Copy as Text            │  ← instant clipboard
-  │ ─────────────────────── │
-  │ Download CSV            │  ← file download
-  │ Download Markdown       │
-  │ Download plain text     │
-  └─────────────────────────┘
-```
-
-Click a row to jump to that tab. Filter by audio/pinned/active. Export the current filtered view — handy for sharing "open tabs for this project" with a colleague.
-
-### Kanban Board — your workflow, your columns
-
-```
-First-run: choose your columns
-╔═════════════════════════════════════════════╗
-║  Configure your board                       ║
-║                                             ║
-║  ┌─────────┐ ┌─────────────┐ ┌───────────┐ ║
-║  │● To Do  │ │● In Progress│ │● Done  ✓  │ ║
-║  └─────────┘ └─────────────┘ └───────────┘ ║
-║  ┌──────────┐ ┌─────────┐ ┌─────────────┐  ║
-║  │  Review  │ │ Backlog │ │   Testing   │  ║
-║  └──────────┘ └─────────┘ └─────────────┘  ║
-║                                             ║
-║  Layout:  [ Single row ▾ ]                  ║
-║                                             ║
-║  Tags:  ● Task  ● Feature  ● Bug  ● Idea    ║
-║  [  New tag label…   ] [🎨] [ Add Tag ]     ║
-║                                             ║
-║  [ Use Defaults ]        [ Create Board ]   ║
-╚═════════════════════════════════════════════╝
-
-Running board in 2×2 grid layout:
-╔══════════════════════════════════════════════════╗
-║ ● ─ ○  Sprint 24                       ⊞  ⋮⋮   ║
-╠══════════════════════════════════════════════════╣
-║ 🔍 Search…   + Add Card    ⊞  ⋮⋮               ║
-║ All  Feature  Bug  Task  Idea  Research           ║
-╠════════════════════╦═════════════════════════════╣
-║  ⬤ TO DO       3  ║  ⬤ IN PROGRESS           2  ║
-║ ─────────────── ⠿  ║ ─────────────────────── ⠿  ║
-║ ┌──────────────┐   ║ ┌───────────────────────┐   ║
-║ │ Add dark mode│   ║ │ Refactor auth module  │   ║
-║ │ [Feature]    │   ║ │ [Task]                │   ║
-║ └──────────────┘   ║ └───────────────────────┘   ║
-║ + Add card         ║ + Add card                   ║
-╠════════════════════╬═════════════════════════════╣
-║  ⬤ DONE        4  ║  ⬤ BLOCKED              1   ║
-║ ─────────────── ⠿  ║ ─────────────────────── ⠿  ║
-║ ┌──────────────┐   ║ ┌───────────────────────┐   ║
-║ │ API endpoints│   ║ │ Waiting on design sign│   ║
-║ │ [Feature]    │   ║ │ [Bug]                 │   ║
-║ └──────────────┘   ║ └───────────────────────┘   ║
-╚════════════════════╩═════════════════════════════╝
-
-  ⠿ = drag column header to reorder
-  ⊞ = cycle layout: row → 2×2 → 3×2
-  ⋮⋮ = edit columns and tags
-```
-
-### Quick Notes — synced scratch pad
-
-```
-╔══════════════════════════════════════════════════╗
-║ ● ─ ○  Notes                                    ║
-╠═══════════════╦══════════════════════════════════╣
-║ Meeting notes ║ Meeting notes              ● + ✕║
-║ Sprint plan   ╠══════════════════════════════════╣
-║ API ideas     ║                                  ║
-║               ║ Client called re: the API        ║
-║               ║ timeline. Need to push back      ║
-║               ║ the deadline by one week.        ║
-║               ║                                  ║
-║               ║ Action items:                    ║
-║               ║ - Update project plan            ║
-║               ║ - Email stakeholders             ║
-║               ╠══════════════════════════════════╣
-║               ║ 42 words · 198/6500 chars     ● ║
-╚═══════════════╩══════════════════════════════════╝
-                                               ↑
-                        sync dot: yellow = saving, green = synced,
-                        red = quota exceeded (still saves locally)
-```
-
-### Pomodoro Timer
-
-```
-╔═══════════════════════╗
-║ ● ─ ○  Pomodoro      ║
-╠═══════════════════════╣
-║  Focus  Short   Long  ║
-║                       ║
-║       ╭───────╮       ║
-║     ╭─┤ 24:17 ├─╮     ║
-║     │ │ Focus │ │     ║
-║     ╰─┴───────┴─╯     ║
-║                       ║
-║  [ Start ] [ ↺ ]  ⚙  ║
-║                       ║
-║    ● ● ○ ○            ║
-║    2 of 4 sessions    ║
-╠═══════════════════════╣
-║  Settings (⚙):       ║
-║  Focus       25 min   ║
-║  Short break  5 min   ║
-║  Long break  15 min   ║
-║  Long after   4 sess  ║
-║  [ Save ]             ║
-╚═══════════════════════╝
-```
+Everything — notes, kanban cards, window positions — lives in `chrome.storage`. Notes and Kanban boards sync  across your Chrome profile using `chrome.storage.sync`, the same secure channel Chrome uses for bookmarks.
 
 ---
 
@@ -199,6 +26,72 @@ Running board in 2×2 grid layout:
 - Yellow dot minimises to title bar · green dot restores
 - Add unlimited panel instances · each Kanban board is independent with its own name and data
 - Window layout saves locally · notes and Kanban data sync across your Chrome profile
+
+---
+
+## What it looks like
+
+### The main dashboard
+
+![Dashboard](screen_shots\dashboard.png)
+
+```
+  ● = red dot (close)   
+  ● = yellow dot (minimise to title bar)
+  ● = green dot (restore) 
+  drag title bar to move, corner to resize
+```
+
+### Tab Manager — find any tab instantly
+
+<img src="screen_shots\tab_manager.png" width=300>
+
+```
+Export dropdown:
+  ┌─────────────────────────┐
+  │ Copy as Markdown        │  ← instant clipboard
+  │ Copy as Text            │  ← instant clipboard
+  │ ─────────────────────── │
+  │ Download CSV            │  ← file download
+  │ Download Markdown       │
+  │ Download plain text     │
+  └─────────────────────────┘
+```
+
+Click a row to jump to that tab. Filter by audio/pinned/active. Export the current filtered view — handy for saving tabs for later or sharing.
+
+<img src="screen_shots\tab_manager_filtered.png" width=300>
+
+### Kanban Board — your workflow, your columns
+
+Add a new Kanban board with `+MODULE`, add a name, configure your board, and customize your tags.
+
+<img src="screen_shots\kanban_config.png">
+
+<img src="screen_shots\kanban.png">
+
+```
+  ⠿ = drag column header to reorder
+  ⊞ = cycle layout: row → 2×2 → 3×2
+  ⋮⋮ = edit columns and tags
+```
+
+### Quick Notes — synced scratch pad
+
+<img src="screen_shots\notepad.png">
+
+```
+sync dot: 
+yellow = saving 
+green = synced
+red = quota exceeded (still saves locally)
+```
+
+### Pomodoro Timer
+
+<img src="screen_shots\pomodoro_full.png">
+
+
 
 ---
 
