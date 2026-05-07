@@ -307,18 +307,7 @@ Red dot reasons and fixes:
 
 **This is the most common reason sync appears broken.** Unpacked extensions loaded via "Load unpacked" get a **random extension ID** assigned by Chrome on each computer. `chrome.storage.sync` keys are scoped to the extension ID, so the two computers are writing to completely separate namespaces and will never see each other's data.
 
-**To fix this**, give the extension a stable ID by adding a `"key"` field to `manifest.json`:
 
-1. On one computer, go to `chrome://extensions` and note the extension ID (e.g. `abcdefghijklmnopqrstuvwxyz123456`).
-2. Find the `.pem` file Chrome generated when you first loaded the extension (it's in the same folder as the extension, named something like `newtab-dashboard.pem`).
-3. Open the `.pem` file, copy the base64 content between `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----`.
-4. Add it to `manifest.json`:
-```json
-"key": "MIIBIjANBgkq...your full key here...IDAQAB"
-```
-5. Reload the extension on both computers — they should now share the same ID and sync will work.
-
-Alternatively, publish to the Chrome Web Store (even as unlisted/private). Published extensions always have a stable ID and sync works without any extra steps.
 
 ### What syncs / what doesn't
 
