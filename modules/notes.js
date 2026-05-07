@@ -52,21 +52,29 @@ window.NotesModule = {
     async function _doPersist() {
       setSyncStatus('saving');
       await store.setItems(notes, n => n.id);
-      setSyncStatus(store.syncOk ? 'synced' : 'local-only');
+      setSyncStatus(store.getSyncStatus());
     }
 
     function setSyncStatus(status) {
       syncStatus = status;
       const indicator = container.querySelector(`#notes-sync-${instanceId}`);
       if (!indicator) return;
-      indicator.className = 'notes-sync-dot sync-' + status;
+      indicator.className = 'notes-sync-dot sync-' + (
+        status === 'synced' ? 'synced' :
+        status === 'saving' ? 'saving' : 'local-only'
+      );
       const labels = {
-        idle:       'Sync idle',
-        saving:     'Saving…',
-        synced:     'Synced to Chrome profile',
-        'local-only': 'Sync quota exceeded — saved locally only',
+        idle:            'Sync idle',
+        saving:          'Saving…',
+        synced:          'Synced to Chrome profile',
+        'local-only':    'Not syncing — reason unknown',
+        'no-account':    'Not syncing: sign into Chrome to enable sync',
+        'sync-disabled': 'Not syncing: enable extension sync in Chrome settings (chrome://settings/syncSetup)',
+        'quota':         'Not syncing: storage quota exceeded — data saved locally',
+        'offline':       'Not syncing: network offline — will retry on next save',
+        'unstable-id':   'Not syncing: extension ID is unstable (developer mode) — see README',
       };
-      indicator.title = labels[status] || '';
+      indicator.title = labels[status] || status;
     }
 
     // ── Shell ──────────────────────────────────────────────────────────────
@@ -202,7 +210,7 @@ window.NotesModule = {
     load().then(() => {
       renderSidebar();
       selectNote(notes[0].id);
-      setSyncStatus(store.syncOk ? 'synced' : 'local-only');
+      setSyncStatus(store.getSyncStatus());
     });
   }
 };

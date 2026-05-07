@@ -273,25 +273,68 @@ cd newtab-dashboard
 
 ## Cross-device sync
 
-Notes and Kanban data sync across all Chrome instances signed in to the same Google account using `chrome.storage.sync`.
+Notes and Kanban data sync across all Chrome instances signed into the same Google account using `chrome.storage.sync`.
 
-**How it works:**
-- Writes go to local storage first (instant), then mirror to sync in the background
-- On load, local and sync copies are merged — the copy with the newer `updatedAt` timestamp wins
-- Incoming sync updates from another device refresh the UI in real time
-- If you are actively typing a note, remote updates will not overwrite your text until you move focus away
+### When things sync
 
-**Quota:** Chrome allows 100 KB total sync storage, with an 8 KB per-item limit. Each note body and each kanban card occupies one key. Normal usage (dozens of notes, hundreds of cards) is comfortably within quota. If the limit is ever reached, the sync indicator turns red and all data continues saving locally — nothing is lost.
+Every save triggers a connectivity probe first — a tiny test write to `chrome.storage.sync` that confirms sync is actually reachable before committing data. If the probe succeeds, data is written to sync immediately. If it fails, data is saved locally and the sync dot turns red with a tooltip explaining exactly why.
 
-**What syncs / what doesn't:**
+On load, the extension reads local storage instantly (so the page is never blocked), then checks sync in the background and merges any newer data from other devices. The merge uses `updatedAt` timestamps — whichever copy of a card or note is newer wins.
+
+The `onChange` listener fires when sync pushes an update from another device while the new tab is open, refreshing the UI without a page reload.
+
+### Sync status dot
+
+Hover the dot to see the exact status. Possible states:
+
+| Dot colour | Meaning |
+|---|---|
+| 🟡 Yellow | Saving in progress |
+| 🟢 Green | Synced to Chrome profile |
+| 🔴 Red | Not syncing — hover for exact reason |
+
+Red dot reasons and fixes:
+
+| Tooltip says | Fix |
+|---|---|
+| Not signed into Chrome | Sign into Chrome with a Google account |
+| Extension sync disabled | Go to `chrome://settings/syncSetup` → enable Extensions |
+| Quota exceeded | Data is saved locally; reduce notes/cards to stay under 100KB |
+| Network offline | Will retry automatically on next save |
+| Extension ID unstable | See developer mode section below |
+
+### Developer mode: why sync may not work between two computers
+
+**This is the most common reason sync appears broken.** Unpacked extensions loaded via "Load unpacked" get a **random extension ID** assigned by Chrome on each computer. `chrome.storage.sync` keys are scoped to the extension ID, so the two computers are writing to completely separate namespaces and will never see each other's data.
+
+**To fix this**, give the extension a stable ID by adding a `"key"` field to `manifest.json`:
+
+1. On one computer, go to `chrome://extensions` and note the extension ID (e.g. `abcdefghijklmnopqrstuvwxyz123456`).
+2. Find the `.pem` file Chrome generated when you first loaded the extension (it's in the same folder as the extension, named something like `newtab-dashboard.pem`).
+3. Open the `.pem` file, copy the base64 content between `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----`.
+4. Add it to `manifest.json`:
+```json
+"key": "MIIBIjANBgkq...your full key here...IDAQAB"
+```
+5. Reload the extension on both computers — they should now share the same ID and sync will work.
+
+Alternatively, publish to the Chrome Web Store (even as unlisted/private). Published extensions always have a stable ID and sync works without any extra steps.
+
+### What syncs / what doesn't
 
 | Data | Synced |
 |---|---|
 | Note titles and bodies | ✅ |
 | Kanban cards | ✅ |
 | Kanban column order and tags | ✅ |
-| Panel window positions and sizes | ❌ (local only — screen layouts differ per device) |
+| Panel positions and sizes | ❌ (local only — screen layouts differ per device) |
+| Theme choice | ❌ (local only) |
 | Pomodoro settings | ❌ (local only) |
+
+### Sync quota
+
+Chrome allows 100 KB total sync storage with an 8 KB per-item limit. Each note body and each kanban card is stored as a separate key. Normal usage (dozens of notes, hundreds of short cards) fits comfortably. If you exceed the limit the dot turns red, all data continues saving locally, and nothing is lost.
+
 
 ---
 

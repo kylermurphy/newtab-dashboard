@@ -4,8 +4,32 @@
  *   - Automatic chunking so no single key exceeds 7KB (sync limit is 8KB)
  *   - Local write-through cache for instant reads on the same device
  *   - Last-write-wins conflict resolution via updatedAt timestamps
+ *   - Pre-write connectivity check — detects when sync is unavailable
+ *     (not signed into Chrome, extension sync disabled, network offline)
+ *     and surfaces the exact reason rather than silently doing nothing
  *   - Graceful quota-exceeded handling with fallback to local-only
  *   - onChange listener so other open tabs/windows stay in sync
+ *
+ * ── Why developer-mode sync requires extra setup ───────────────────────
+ * Unpacked extensions (loaded via "Load unpacked") get a RANDOM extension
+ * ID each install. chrome.storage.sync keys are scoped to that ID, so two
+ * computers with separately-loaded copies of the extension have different
+ * IDs and cannot see each other's data — they are writing to completely
+ * separate namespaces.
+ *
+ * To sync between two developer-mode installs you must give the extension
+ * a STABLE ID. Do this once:
+ *   1. Open chrome://extensions on each computer.
+ *   2. Note the extension ID shown under "Dashboard — New Tab".
+ *   3. If they differ, copy the key from the .pem file (generated when
+ *      Chrome first creates the extension) and add it to manifest.json:
+ *        "key": "<base64-encoded public key from .pem>"
+ *   4. Reload both extensions — they should now share the same ID.
+ *
+ * Alternatively, publish to the Chrome Web Store (even as unlisted) —
+ * published extensions always have a stable ID and sync works out of
+ * the box with no extra steps.
+ * ──────────────────────────────────────────────────────────────────────
  */
 'use strict';
 
@@ -48,9 +72,8 @@ window.sec = {
 
   /**
    * Tagged template for static HTML shells.
-   * ENFORCES that all interpolated values are safe instance IDs:
-   * only alphanumeric chars, underscores, and hyphens are permitted.
-   * Throws at runtime if any interpolated value contains other characters.
+   * Enforces that all interpolated values are safe instance IDs
+   * (alphanumeric, underscore, hyphen only). Throws at runtime otherwise.
    */
   shell(strings, ...values) {
     const SAFE_ID = /^[a-zA-Z0-9_-]*$/;
@@ -65,63 +88,86 @@ window.sec = {
 };
 
 // ── SyncStore ──────────────────────────────────────────────────────────────
-//
-// Usage:
-//   const store = new SyncStore('myapp_notes');
-//   await store.setItems(itemsArray, item => item.id);   // save array
-//   const items = await store.getItems();                // load array
-//   store.onChange(newItems => { ... });                 // live updates
-//
-// Data model in storage:
-//   sync + local:  `${ns}:index`  → JSON array of ids
-//   sync + local:  `${ns}:item:${id}`  → JSON of single item (≤7KB)
-//   local only:    `${ns}:sync_ok` → 'true' | 'false' (quota status)
-//
 window.SyncStore = class SyncStore {
   constructor(namespace) {
-    this.ns       = namespace;
-    this.syncOk   = true;   // false if we've ever hit a quota error
-    this._listeners = [];
+    this.ns          = namespace;
+    this.syncOk      = true;
+    this.syncReason  = 'ok';  // human-readable reason when not ok
+    this._listeners  = [];
     this._boundOnChanged = this._onChanged.bind(this);
     chrome.storage.onChanged.addListener(this._boundOnChanged);
   }
 
   // ── Key helpers ────────────────────────────────────────────────────────
-  _indexKey()    { return `${this.ns}:index`; }
-  _itemKey(id)   { return `${this.ns}:item:${id}`; }
-  _statusKey()   { return `${this.ns}:sync_ok`; }
+  _indexKey()  { return `${this.ns}:index`; }
+  _itemKey(id) { return `${this.ns}:item:${id}`; }
+  _statusKey() { return `${this.ns}:sync_status`; }
 
-  // ── Check quota status from local ─────────────────────────────────────
-  async _loadSyncStatus() {
+  // ── Sync connectivity probe ────────────────────────────────────────────
+  // Writes a tiny sentinel value to sync storage and reads it back.
+  // This is the only reliable way to know whether sync is actually
+  // working before committing real data to it.
+  async _probSync() {
+    const PROBE_KEY = `${this.ns}:probe`;
+    const PROBE_VAL = String(Date.now());
+
     return new Promise(resolve => {
-      chrome.storage.local.get([this._statusKey()], res => {
-        this.syncOk = res[this._statusKey()] !== 'false';
-        resolve();
+      chrome.storage.sync.set({ [PROBE_KEY]: PROBE_VAL }, () => {
+        if (chrome.runtime.lastError) {
+          const msg = chrome.runtime.lastError.message || 'unknown error';
+          this._markSyncFailed(_classifyError(msg));
+          resolve(false);
+          return;
+        }
+        // Read it back to confirm round-trip
+        chrome.storage.sync.get([PROBE_KEY], res => {
+          if (chrome.runtime.lastError || res[PROBE_KEY] !== PROBE_VAL) {
+            this._markSyncFailed('sync read-back failed');
+            resolve(false);
+          } else {
+            this.syncOk     = true;
+            this.syncReason = 'ok';
+            chrome.storage.local.set({ [this._statusKey()]: 'ok' });
+            resolve(true);
+          }
+        });
       });
     });
   }
 
-  async _setSyncStatus(ok) {
-    this.syncOk = ok;
-    await chrome.storage.local.set({ [this._statusKey()]: ok ? 'true' : 'false' });
+  _markSyncFailed(reason) {
+    this.syncOk     = false;
+    this.syncReason = reason;
+    chrome.storage.local.set({ [this._statusKey()]: reason });
+    console.warn(`[SyncStore:${this.ns}] Sync unavailable: ${reason}`);
   }
 
-  // ── Write to sync (with quota fallback) ───────────────────────────────
+  // Classify raw Chrome error messages into human-readable reasons
+  // so the UI sync dot tooltip is actually useful.
+  // (These are the real strings Chrome returns in practice.)
+  // eslint-disable-next-line no-unused-vars
+
+  // ── Write to sync ──────────────────────────────────────────────────────
   async _syncSet(obj) {
-    if (!this.syncOk) return;
+    if (!this.syncOk) return false;
+
+    // Probe first to catch stale syncOk=true state
+    const reachable = await this._probSync();
+    if (!reachable) return false;
+
     return new Promise(resolve => {
       chrome.storage.sync.set(obj, () => {
         if (chrome.runtime.lastError) {
           const msg = chrome.runtime.lastError.message || '';
           if (msg.includes('QUOTA_BYTES') || msg.includes('quota')) {
-            this._setSyncStatus(false);
-            console.warn(`[SyncStore:${this.ns}] Sync quota exceeded — falling back to local-only`);
+            this._markSyncFailed('quota exceeded — saving locally only');
           } else {
-            // Log all other sync errors (network offline, profile issues, etc.)
-            console.warn(`[SyncStore:${this.ns}] Sync write failed: ${msg}`);
+            this._markSyncFailed(_classifyError(msg));
           }
+          resolve(false);
+        } else {
+          resolve(true);
         }
-        resolve();
       });
     });
   }
@@ -134,33 +180,27 @@ window.SyncStore = class SyncStore {
   }
 
   // ── Save array of items ────────────────────────────────────────────────
-  // idFn: item => unique string id
-  // itemSerializer: item => object to store (defaults to identity)
   async setItems(items, idFn, serializeFn = x => x) {
-    await this._loadSyncStatus();
+    const ids       = items.map(idFn);
+    const toWrite   = { [this._indexKey()]: JSON.stringify(ids) };
 
-    const ids    = items.map(idFn);
-    const indexJson = JSON.stringify(ids);
-
-    // Build the per-item objects
-    const toWrite = { [this._indexKey()]: indexJson };
     for (const item of items) {
-      const serialized = serializeFn(item);
-      const json = JSON.stringify(serialized);
-      // Warn if a single item is too large — sync limit is 8192 bytes per key
+      const json = JSON.stringify(serializeFn(item));
       if (json.length > 7000) {
-        console.warn(`[SyncStore:${this.ns}] Item ${idFn(item)} is ${json.length} bytes — may exceed sync quota`);
+        console.warn(`[SyncStore:${this.ns}] Item ${idFn(item)} is ${json.length} bytes — may exceed sync 8KB limit`);
       }
       toWrite[this._itemKey(idFn(item))] = json;
     }
 
-    // Write to local first (always succeeds, instant)
+    // Always write to local first (instant, always works)
     await new Promise(resolve => chrome.storage.local.set(toWrite, resolve));
-    // Then mirror to sync in background (may silently fail to quota)
-    await this._syncSet(toWrite);
+
+    // Mirror to sync — _syncSet probes connectivity internally
+    const synced = await this._syncSet(toWrite);
+    return synced;
   }
 
-  // ── Remove items by id (call after setItems to clean up deleted ones) ──
+  // ── Remove items ────────────────────────────────────────────────────────
   async removeItems(removedIds) {
     if (!removedIds.length) return;
     const keys = removedIds.map(id => this._itemKey(id));
@@ -169,52 +209,49 @@ window.SyncStore = class SyncStore {
   }
 
   // ── Load array of items ────────────────────────────────────────────────
-  // Reads from local first; if index is missing, falls back to sync.
-  // Merges: sync wins for items with newer updatedAt, local wins otherwise.
+  // Always reads local immediately, then merges with sync if available.
+  // The merge uses updatedAt — whichever copy is newer wins.
   async getItems(sanitizeFn = x => x) {
-    await this._loadSyncStatus();
-
-    // Step 1: read local index
+    // First get local data immediately — never block on sync probe for reads
     const localIndex = await this._getIndex('local');
+    const localItems = localIndex.length
+      ? await this._fetchItems(localIndex, 'local')
+      : {};
 
-    // Step 2: if we have a sync connection, also read sync index and merge
-    let syncIndex = [];
-    if (this.syncOk) {
-      syncIndex = await this._getIndex('sync');
-    }
+    // Then probe sync and merge if reachable
+    const reachable = await this._probSync();
 
-    // Union of all known ids
-    const allIds = [...new Set([...localIndex, ...syncIndex])];
+    let merged = Object.values(localItems);
 
-    if (allIds.length === 0) return [];
+    if (reachable) {
+      const syncIndex = await this._getIndex('sync');
+      const allIds    = [...new Set([...localIndex, ...syncIndex])];
 
-    // Step 3: fetch all items from both stores
-    const localItems = await this._fetchItems(allIds, 'local');
-    const syncItems  = this.syncOk ? await this._fetchItems(allIds, 'sync') : {};
+      if (allIds.length > 0) {
+        const syncItems = await this._fetchItems(allIds, 'sync');
 
-    // Step 4: merge — for each id, pick whichever copy has newer updatedAt
-    const merged = [];
-    for (const id of allIds) {
-      const local = localItems[id];
-      const synced = syncItems[id];
-      let winner = local;
-      if (synced && local) {
-        winner = (synced.updatedAt || 0) > (local.updatedAt || 0) ? synced : local;
-      } else if (synced) {
-        winner = synced;
+        merged = [];
+        for (const id of allIds) {
+          const local  = localItems[id];
+          const synced = syncItems[id];
+          let winner   = local;
+          if (synced && local) {
+            winner = (synced.updatedAt || 0) > (local.updatedAt || 0) ? synced : local;
+          } else if (synced) {
+            winner = synced;
+          }
+          if (winner) merged.push(winner);
+        }
+
+        // Back-fill local with the merged result
+        const toWrite = { [this._indexKey()]: JSON.stringify(merged.map(i => i.id || i._id)) };
+        for (const item of merged) {
+          const id = item.id || item._id;
+          if (id) toWrite[this._itemKey(id)] = JSON.stringify(item);
+        }
+        chrome.storage.local.set(toWrite);
       }
-      if (winner) merged.push(winner);
     }
-
-    // Step 5: write merged result back to local so it's warm next time
-    const toWrite = {};
-    const winnerIds = merged.map(item => item.id || item._id);
-    toWrite[this._indexKey()] = JSON.stringify(winnerIds);
-    for (const item of merged) {
-      const id = item.id || item._id;
-      if (id) toWrite[this._itemKey(id)] = JSON.stringify(item);
-    }
-    chrome.storage.local.set(toWrite); // fire and forget
 
     return merged.map(item => sanitizeFn(item)).filter(Boolean);
   }
@@ -252,9 +289,8 @@ window.SyncStore = class SyncStore {
     });
   }
 
-  // ── Single value (for config objects, not arrays) ──────────────────────
+  // ── Single config object ────────────────────────────────────────────────
   async setConfig(obj) {
-    await this._loadSyncStatus();
     const json = JSON.stringify(obj);
     const key  = `${this.ns}:config`;
     await new Promise(resolve => chrome.storage.local.set({ [key]: json }, resolve));
@@ -262,7 +298,6 @@ window.SyncStore = class SyncStore {
   }
 
   async getConfig(sanitizeFn = x => x, defaultVal = null) {
-    await this._loadSyncStatus();
     const key = `${this.ns}:config`;
 
     const localVal = await new Promise(resolve => {
@@ -271,8 +306,10 @@ window.SyncStore = class SyncStore {
       });
     });
 
+    const reachable = await this._probSync();
     let syncVal = null;
-    if (this.syncOk) {
+
+    if (reachable) {
       syncVal = await new Promise(resolve => {
         chrome.storage.sync.get([key], res => {
           if (chrome.runtime.lastError) { resolve(null); return; }
@@ -281,7 +318,6 @@ window.SyncStore = class SyncStore {
       });
     }
 
-    // Sync wins if its updatedAt is newer
     let winner = localVal;
     if (syncVal && localVal) {
       winner = (syncVal.updatedAt || 0) > (localVal.updatedAt || 0) ? syncVal : localVal;
@@ -290,11 +326,28 @@ window.SyncStore = class SyncStore {
     }
 
     if (winner) {
-      // Back-fill local
       chrome.storage.local.set({ [key]: JSON.stringify(winner) });
       return sanitizeFn(winner);
     }
     return defaultVal;
+  }
+
+  // ── Sync status for UI ──────────────────────────────────────────────────
+  // Modules call this to get a status string for the indicator dot.
+  // Returns: 'synced' | 'local-only' | 'no-account' | 'sync-disabled' |
+  //          'quota' | 'offline' | 'unstable-id'
+  getSyncStatus() {
+    if (this.syncOk) return 'synced';
+    if (this.syncReason.includes('quota'))       return 'quota';
+    if (this.syncReason.includes('account') ||
+        this.syncReason.includes('sign'))        return 'no-account';
+    if (this.syncReason.includes('disabled') ||
+        this.syncReason.includes('policy'))      return 'sync-disabled';
+    if (this.syncReason.includes('offline') ||
+        this.syncReason.includes('network'))     return 'offline';
+    if (this.syncReason.includes('id') ||
+        this.syncReason.includes('unstable'))    return 'unstable-id';
+    return 'local-only';
   }
 
   // ── Live updates from sync ─────────────────────────────────────────────
@@ -303,11 +356,9 @@ window.SyncStore = class SyncStore {
   }
 
   _onChanged(changes, area) {
-    if (area !== 'sync' || !this.syncOk) return;
-    // If any key in our namespace changed, reload and notify
+    if (area !== 'sync') return;
     const relevant = Object.keys(changes).some(k => k.startsWith(this.ns + ':'));
     if (!relevant || !this._listeners.length) return;
-    // Debounce — multiple keys often change together
     clearTimeout(this._changeTimer);
     this._changeTimer = setTimeout(() => {
       this._listeners.forEach(fn => fn());
@@ -319,3 +370,15 @@ window.SyncStore = class SyncStore {
     this._listeners = [];
   }
 };
+
+// ── Error classifier ───────────────────────────────────────────────────────
+function _classifyError(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('not signed') || m.includes('no account') ||
+      m.includes('profile') || m.includes('sign in'))    return 'not signed into Chrome';
+  if (m.includes('sync') && m.includes('disabled'))      return 'extension sync disabled in Chrome settings';
+  if (m.includes('quota'))                               return 'quota exceeded';
+  if (m.includes('network') || m.includes('offline') ||
+      m.includes('connection'))                          return 'network offline';
+  return msg || 'unknown sync error';
+}

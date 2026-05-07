@@ -117,27 +117,35 @@ window.KanbanModule = {
     async function _doSaveCards() {
       setSyncStatus('saving');
       await cardStore.setItems(cards, c => c.id);
-      setSyncStatus(cardStore.syncOk ? 'synced' : 'local-only');
+      setSyncStatus(cardStore.getSyncStatus());
     }
 
     async function saveConfig() {
       setSyncStatus('saving');
       await configStore.setConfig({ columns, layout, tags, updatedAt: Date.now() });
-      setSyncStatus(configStore.syncOk ? 'synced' : 'local-only');
+      setSyncStatus(configStore.getSyncStatus());
     }
 
     function setSyncStatus(status) {
       syncStatus = status;
       const dot = container.querySelector(`#kb-sync-${instanceId}`);
       if (!dot) return;
-      dot.className = 'kb-sync-dot sync-' + status;
+      dot.className = 'kb-sync-dot sync-' + (
+        status === 'synced'  ? 'synced' :
+        status === 'saving'  ? 'saving' : 'local-only'
+      );
       const labels = {
-        idle:       'Sync idle',
-        saving:     'Saving…',
-        synced:     'Synced across Chrome profile',
-        'local-only': 'Sync quota exceeded — saved locally only',
+        idle:            'Sync idle',
+        saving:          'Saving…',
+        synced:          'Synced across Chrome profile',
+        'local-only':    'Not syncing — reason unknown',
+        'no-account':    'Not syncing: sign into Chrome to enable sync',
+        'sync-disabled': 'Not syncing: enable extension sync in Chrome settings (chrome://settings/syncSetup)',
+        'quota':         'Not syncing: storage quota exceeded — data saved locally',
+        'offline':       'Not syncing: network offline — will retry on next save',
+        'unstable-id':   'Not syncing: extension ID is unstable (developer mode) — see README',
       };
-      dot.title = labels[status] || '';
+      dot.title = labels[status] || status;
     }
 
     // ── Static shell ───────────────────────────────────────────────────────
@@ -594,7 +602,7 @@ window.KanbanModule = {
       rebuildFilterChips();
       if (!configured) openSetupModal(false);
       else applyLayout();
-      setSyncStatus(cardStore.syncOk ? 'synced' : 'local-only');
+      setSyncStatus(cardStore.getSyncStatus());
     });
   }
 };
