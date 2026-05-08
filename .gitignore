@@ -8,5 +8,13 @@ Thumbs.db
 *.swp
 *.swo
 
+# Chrome extension private keys — never commit these
+*.pem
+
 # Build artifacts
 *.zip
+
+# Chrome extension private key — never commit this
+# It is generated alongside the zip when you first upload to the Web Store.
+# Store it somewhere secure (password manager, encrypted drive).
+*.pem

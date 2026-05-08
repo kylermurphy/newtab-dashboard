@@ -305,9 +305,11 @@ Red dot reasons and fixes:
 
 ### Developer mode: why sync may not work between two computers
 
-**This is the most common reason sync appears broken.** Unpacked extensions loaded via "Load unpacked" get a **random extension ID** assigned by Chrome on each computer. `chrome.storage.sync` keys are scoped to the extension ID, so the two computers are writing to completely separate namespaces and will never see each other's data.
+**This is the most common reason sync appears broken.** Unpacked extensions loaded via "Load unpacked" get a **random extension ID** assigned by Chrome on each computer. `chrome.storage.sync` keys are scoped to the extension ID, so two computers with separately-loaded copies are writing to completely separate namespaces and will never see each other's data.
 
+**The solution is to publish to the Chrome Web Store** (even as an unlisted private extension). Published extensions always have a stable, permanent ID that is the same on every device, and sync works without any extra configuration. See the [Publishing to the Chrome Web Store](#publishing-to-the-chrome-web-store) section below.
 
+Until the extension is published, sync will only work on a single computer — data is always saved locally so nothing is lost, and everything will sync correctly once published.
 
 ### What syncs / what doesn't
 
@@ -389,6 +391,92 @@ const MODULE_REGISTRY = {
 4. Add a `<script src="modules/yourmodule.js"></script>` in `newtab.html` before `dashboard.js`
 
 For modules with persistent data, use `SyncStore` from `security.js` — see `notes.js` for a reference implementation.
+
+---
+
+## Publishing to the Chrome Web Store
+
+Publishing gives the extension a permanent, stable ID — which is required for `chrome.storage.sync` to work across multiple computers. Even publishing as an **unlisted** extension (not publicly searchable) is enough to get a stable ID and enable sync.
+
+### What you need before starting
+
+- A Google account
+- A one-time $5 USD developer registration fee
+- The Chrome Store zip file (provided in releases, or built from source)
+- At least one 1280×800 screenshot of the extension in use
+- A short description (up to 132 characters) and a longer description
+
+### Step 1 — Register as a Chrome developer
+
+1. Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+2. Sign in with your Google account
+3. Pay the one-time $5 registration fee if you haven't already
+4. Accept the developer agreement
+
+### Step 2 — Create a new item
+
+1. Click **New Item** in the top right of the dashboard
+2. Upload the `newtab-dashboard-chrome-store.zip` file
+3. Chrome will validate the manifest automatically — any errors appear here
+
+### Step 3 — Fill in the store listing
+
+On the **Store Listing** tab:
+
+| Field | What to enter |
+|---|---|
+| Name | Dashboard — New Tab |
+| Short description | A modular, privacy-first productivity dashboard for your new tab page |
+| Detailed description | Copy from this README or write your own |
+| Category | Productivity |
+| Language | English (United States) |
+| Screenshots | At least one 1280×800 or 640×400 screenshot |
+
+**Privacy practices tab** — you must declare what data the extension accesses:
+
+- Under *Single purpose*, write: "Replaces the new tab page with a modular productivity dashboard"
+- Under *Permissions justification*:
+  - `tabs`: "Used to list open tabs in the Tab Manager module"
+  - `storage`: "Used to save notes, kanban cards, and dashboard layout locally and sync them across devices"
+- Data use: select "This extension does not collect or transmit any user data to external servers"
+
+### Step 4 — Set visibility
+
+On the **Distribution** tab, choose one of:
+
+| Option | What it means |
+|---|---|
+| **Public** | Anyone can find and install it via the Web Store search |
+| **Unlisted** | Only people with the direct link can install it — good for personal or team use |
+| **Private** | Only members of your Google Group or domain can install it |
+
+For personal or team use across a few computers, **Unlisted** is the right choice. You get a stable ID and sync works, without the extension being publicly searchable.
+
+### Step 5 — Submit for review
+
+Click **Submit for Review**. Google's automated review typically completes within a few hours for simple extensions. Extensions with broader permissions or that use remote code can take several days. This extension has a minimal permission set (`tabs` and `storage` only) so it usually clears automated review quickly.
+
+### Step 6 — Install on all your computers
+
+Once approved:
+
+1. Go to your item's Web Store page (you'll find the URL in the dashboard)
+2. Click **Add to Chrome** on each computer
+3. Open a new tab — your dashboard appears
+4. Data will begin syncing automatically as long as Chrome is signed into the same Google account on each machine
+
+### After publishing: key management
+
+When Chrome Web Store accepts your extension it assigns a permanent extension ID. This ID is tied to your Google developer account, not to any local file. You do not need to manage a `.pem` file to publish updates — you just upload a new zip to the same dashboard item.
+
+If you previously loaded the extension in developer mode, Chrome may have generated a local `.pem` file in the extension's parent directory. This file is not needed for Web Store publishing and should never be committed to GitHub. Add it to `.gitignore` to be safe:
+
+```
+# .gitignore
+*.pem
+```
+
+To publish an update, increment the `"version"` field in `manifest.json`, build a new Chrome Store zip, and upload it to the developer dashboard. Google's review process applies to updates as well, though subsequent reviews are typically faster than the first.
 
 ---
 
